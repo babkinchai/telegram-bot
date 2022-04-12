@@ -50,7 +50,7 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
             }
             case ("Что нибудь идеальное"):
             {
-                sendCatsPhoto(message);
+                photoService.sendCatsPhoto(message);
                 break;
             }
             case ("Подписаться"):
@@ -96,22 +96,6 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
             execute(message);
         } catch (TelegramApiException e) {
             logger.error("sendCustomKeyboard method error. Cant send message for client. "+e.getMessage());
-        }
-    }
-
-    public void sendCatsPhoto(Message message) {
-        try {
-            SendPhoto sendPhoto;
-            try {
-                sendPhoto=photoService.getPhoto(message);
-                sendPhoto.setChatId(message.getChatId().toString());
-                execute(sendPhoto);
-            } catch (IndexOutOfBoundsException e) {
-                execute(new SendMessage(message.getChatId().toString(),"Нет фоток кота"));
-            }
-        }
-        catch (TelegramApiException e) {
-            logger.error("sendCatsPhoto switch default error. Cant send message for client. "+e.getMessage());
         }
     }
 

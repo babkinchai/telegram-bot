@@ -21,13 +21,16 @@ public class MyLongPulling extends TelegramLongPollingBot {
 
     private final TextCommandServiceInterface textCommandServiceInterface;
 
+    private CallbackServiceInterface callbackServiceInterface;
 
     private final PhotoServiceInterface photoServiceInterface;
 
     public MyLongPulling(TextCommandService textCommandServiceInterface,
-                         PhotoService photoServiceInterface
-    ) {
+                         CallbackService callbackServiceInterface,
+                         PhotoService photoServiceInterface) {
         this.textCommandServiceInterface = textCommandServiceInterface;
+
+        this.callbackServiceInterface = callbackServiceInterface;
         this.photoServiceInterface = photoServiceInterface;
     }
 
@@ -59,7 +62,7 @@ public class MyLongPulling extends TelegramLongPollingBot {
                 textCommandServiceInterface.getTextMessage(update.getMessage());
 
         }else if (update.hasCallbackQuery()) {
-            System.out.println(update.getCallbackQuery().getMessage());
+            callbackServiceInterface.getCallback(update.getCallbackQuery());
         }
     }
 }

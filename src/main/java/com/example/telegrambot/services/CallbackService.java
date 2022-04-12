@@ -16,22 +16,37 @@ public class CallbackService implements CallbackServiceInterface{
 
     @Override
     public void getCallback(CallbackQuery callbackQuery) {
-        if(callbackQuery.getData().matches("/sub/*"))
+        if(callbackQuery.getData().matches("/sub/(.*)"))
         {
             String username = callbackQuery.getData().substring(5);
             if(botUsersRepos.findByUsername(username).isPresent()) {
                 BotUsers botUsers = botUsersRepos.findByUsername(username).get();
                 if(botUsersRepos.findById(callbackQuery.getFrom().getId()).isPresent()){
-                    botUsers.getSubUser().add(botUsersRepos.findById(callbackQuery.getFrom().getId()).get());
-                    botUsersRepos.save(botUsers);
+                    BotUsers checkUser=botUsers.getSubUser().stream()
+                            .filter(botUsers1 -> callbackQuery.getFrom().getUserName().equals(botUsers1.getUsername()))
+                            .findFirst()
+                            .orElse(null);
+                    if(checkUser==null) {
+                        botUsers.getSubUser().add(botUsersRepos.findById(callbackQuery.getFrom().getId()).get());
+                        botUsersRepos.save(botUsers);
+                    }
                 }
             }
         }else
-        if(callbackQuery.getData().matches("/unsub/*"))
+        if(callbackQuery.getData().matches("/unsub/(.*)"))
         {
             String username = callbackQuery.getData().substring(7);
-            BotUsers botUsers = botUsersRepos.findById(callbackQuery.getFrom().getId()).get();
-            botUsers.getSubUser().remove(botUsersRepos.findByUsername(username).get());
+            if (botUsersRepos.findById(callbackQuery.getFrom().getId()).isPresent()) {
+                if (botUsersRepos.findByUsername(username).isPresent()) {
+                    BotUsers botUsers = botUsersRepos.findByUsername(username).get();
+                    for (int i = 0; i < botUsers.getSubUser().size(); i++) {
+                        if(botUsers.getSubUser().get(i).getId().equals(callbackQuery.getFrom().getId())){
+                            botUsers.getSubUser().remove(i);
+                        }
+                    }
+                    botUsersRepos.save(botUsers);
+                }
+            }
         }
     }
 }

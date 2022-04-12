@@ -17,16 +17,17 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 public class PhotoService extends DefaultAbsSender implements PhotoServiceInterface {
@@ -45,13 +46,24 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
         this.botUsersRepos = botUsersRepos;
     }
 
-    @Override
     public SendPhoto getPhoto(Message message) throws IndexOutOfBoundsException{
-        SendPhoto sendPhoto = new SendPhoto();
         UsersCatImage usersCatImage = usersCatImageRepos.getRundom().get(0);
+        return addSubMenu(message.getFrom().getId(), usersCatImage);
+    }
+
+    private SendPhoto addSubMenu(Long fromId, UsersCatImage usersCatImage) {
+        SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setPhoto(new InputFile(usersCatImage.getFileId()));
-        if(!message.getFrom().getUserName().equals(usersCatImage.getBotUsers().getUsername())) {
-            sendPhoto.setReplyMarkup(sendInlineKeyboard(usersCatImage.getBotUsers().getUsername()));
+        if(!fromId.equals(usersCatImage.getBotUsers().getId())) {
+            if(botUsersRepos.findById(fromId).isPresent()) {
+                BotUsers checkUser = usersCatImage.getBotUsers().getSubUser().stream().filter(botUsers -> botUsers.getId().equals(fromId)).findFirst().orElse(null);
+                if (checkUser!=null){
+                    sendPhoto.setReplyMarkup(sendUnSubInlineKeyboard(usersCatImage.getBotUsers().getUsername()));
+                }
+                else {
+                    sendPhoto.setReplyMarkup(sendSubInlineKeyboard(usersCatImage.getBotUsers().getUsername()));
+                }
+            }
         }
         return sendPhoto;
     }
@@ -60,19 +72,18 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
     public void savePhoto(Message message) throws TelegramApiException {
         File fileDir = new File("img");
         boolean mkdir = fileDir.mkdir();
-            try {
-                File file = new File("img/" + message.getPhoto().get(2).getFileId() + ".jpg");
-                file.createNewFile();
-                    downloadFile(Objects.requireNonNull(getFilePath(message.getPhoto().get(2))), file);
-                    message.setText(saveImage(message, file));
-                    file.deleteOnExit();
-            } catch (NoSuchElementException e) {
-                message.setText("Наберите /start для начала");
-            } catch (IOException e) {
-                logger.error("Cant create new file." + e.getMessage());
-                e.printStackTrace();
-            }
-
+        try {
+            File file = new File("img/" + message.getPhoto().get(2).getFileId() + ".jpg");
+            file.createNewFile();
+            downloadFile(Objects.requireNonNull(getFilePath(message.getPhoto().get(2))), file);
+            message.setText(saveImage(message, file));
+            file.deleteOnExit();
+        } catch (NoSuchElementException e) {
+            message.setText("Наберите /start для начала");
+        } catch (IOException e) {
+            logger.error("Cant create new file." + e.getMessage());
+            e.printStackTrace();
+        }
         execute(new SendMessage(message.getChatId().toString(),message.getText()));
     }
 
@@ -112,11 +123,20 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
             BotUsers byId = botUsersRepos.findById(message.getFrom().getId()).get();
             usersCatImage.setBotUsers(byId);
             usersCatImageRepos.save(usersCatImage);
+            byId.getSubUser().forEach(botUsers -> {
+                SendPhoto sendPhoto=addSubMenu(botUsers.getId(), usersCatImage);
+                sendPhoto.setChatId(botUsers.getId().toString());
+                try {
+                    execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+            });
             return "Изображение сохранено";
         }
     }
 
-    public InlineKeyboardMarkup sendInlineKeyboard(String username) {
+    public InlineKeyboardMarkup sendSubInlineKeyboard(String username) {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         List<InlineKeyboardButton> buttons = new ArrayList<InlineKeyboardButton>();
@@ -128,8 +148,37 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
         return inlineKeyboardMarkup;
     }
 
+    public InlineKeyboardMarkup sendUnSubInlineKeyboard(String username) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> buttons = new ArrayList<InlineKeyboardButton>();
+        InlineKeyboardButton sub= new InlineKeyboardButton("Отписаться от публикаций " + username);
+        sub.setCallbackData("/unsub/"+username);
+        buttons.add(sub);
+        keyboard.add(buttons);
+        inlineKeyboardMarkup.setKeyboard(keyboard);
+        return inlineKeyboardMarkup;
+    }
+
     @Override
     public String getBotToken() {
         return token;
+    }
+
+    @Override
+    public void sendCatsPhoto(Message message) {
+        try {
+            SendPhoto sendPhoto;
+            try {
+                sendPhoto=getPhoto(message);
+                sendPhoto.setChatId(message.getChatId().toString());
+                execute(sendPhoto);
+            } catch (IndexOutOfBoundsException e) {
+                execute(new SendMessage(message.getChatId().toString(),"Нет фоток кота"));
+            }
+        }
+        catch (TelegramApiException e) {
+            logger.error("sendCatsPhoto switch default error. Cant send message for client. "+e.getMessage());
+        }
     }
 }

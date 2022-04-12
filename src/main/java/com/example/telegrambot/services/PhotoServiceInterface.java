@@ -6,7 +6,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public interface PhotoServiceInterface {
 
-    SendPhoto getPhoto(Message message) throws IndexOutOfBoundsException;
+    public void sendCatsPhoto(Message message);
 
     void savePhoto(Message message) throws TelegramApiException;
 }

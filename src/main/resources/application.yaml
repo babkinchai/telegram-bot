@@ -1,13 +1,18 @@
+bot:
+  name: MyCatBotTest
+  token: 5261680729:AAFA0StFi-3g92ZoEIJvLFlH-t6lYxz1iwI
 spring:
   datasource:
-    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/telegram_bot_db}
-    username: ${JDBC_DATABASE_USERNAME postgres}
-    password: ${JDBC_DATABASE_PASSWORD postgres}
+    url: jdbc:postgresql://localhost:5432/telegram_bot_db
+    username: postgres
+    password: postgres
   jpa:
     hibernate:
      ddl-auto: validate
-    show-sql: false
-    generate-ddl: false
+    show-sql: true
+    generate-ddl: true
+  flyway:
+    enabled: false
 logging:
   level:
     root: error
