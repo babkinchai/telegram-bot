@@ -11,7 +11,10 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -50,6 +53,11 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
                 sendCatsPhoto(message);
                 break;
             }
+            case ("Подписаться"):
+            {
+
+                break;
+            }
             default:
                 try {
                     execute(new SendMessage(message.getChatId().toString(),"Осуждаю"));
@@ -75,7 +83,7 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-        row.add("Саня");
+        row.add("Подписаться");
         row.add("хуй");
         row.add("соси");
         keyboard.add(row);
@@ -93,9 +101,9 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
 
     public void sendCatsPhoto(Message message) {
         try {
-            SendPhoto sendPhoto = new SendPhoto();
+            SendPhoto sendPhoto;
             try {
-                sendPhoto.setPhoto(photoService.getPhoto());
+                sendPhoto=photoService.getPhoto(message);
                 sendPhoto.setChatId(message.getChatId().toString());
                 execute(sendPhoto);
             } catch (IndexOutOfBoundsException e) {

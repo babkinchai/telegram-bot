@@ -13,7 +13,7 @@ public class UsersCatImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private BotUsers botUsers;
 
     @Column(name = "image_name")

@@ -12,19 +12,21 @@ import org.telegram.telegrambots.bots.DefaultAbsSender;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PhotoService extends DefaultAbsSender implements PhotoServiceInterface {
@@ -44,8 +46,14 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
     }
 
     @Override
-    public InputFile getPhoto() throws IndexOutOfBoundsException{
-        return new InputFile( usersCatImageRepos.getRundom().get(0).getFileId());
+    public SendPhoto getPhoto(Message message) throws IndexOutOfBoundsException{
+        SendPhoto sendPhoto = new SendPhoto();
+        UsersCatImage usersCatImage = usersCatImageRepos.getRundom().get(0);
+        sendPhoto.setPhoto(new InputFile(usersCatImage.getFileId()));
+        if(!message.getFrom().getUserName().equals(usersCatImage.getBotUsers().getUsername())) {
+            sendPhoto.setReplyMarkup(sendInlineKeyboard(usersCatImage.getBotUsers().getUsername()));
+        }
+        return sendPhoto;
     }
 
     @Override
@@ -83,7 +91,6 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
                 logger.error("getFilePath method error. Cant send message for client. "+e.getMessage());
             }
         }
-
         return null;
     }
 
@@ -98,16 +105,27 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
             return "Прости, но такое изображение уже есть";
         }
         else {
-            List<PhotoSize> photo = message.getPhoto();
             UsersCatImage usersCatImage = new UsersCatImage();
             usersCatImage.setImageName(md5);
             usersCatImage.setFileId(message.getPhoto().get(2).getFileId());
             file.deleteOnExit();
-            Optional<BotUsers> byId = botUsersRepos.findById(message.getFrom().getId());
-            usersCatImage.setBotUsers(byId.orElseThrow());
+            BotUsers byId = botUsersRepos.findById(message.getFrom().getId()).get();
+            usersCatImage.setBotUsers(byId);
             usersCatImageRepos.save(usersCatImage);
             return "Изображение сохранено";
         }
+    }
+
+    public InlineKeyboardMarkup sendInlineKeyboard(String username) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> buttons = new ArrayList<InlineKeyboardButton>();
+        InlineKeyboardButton sub= new InlineKeyboardButton("Подписаться на публикации " + username);
+        sub.setCallbackData("/sub/"+username);
+        buttons.add(sub);
+        keyboard.add(buttons);
+        inlineKeyboardMarkup.setKeyboard(keyboard);
+        return inlineKeyboardMarkup;
     }
 
     @Override

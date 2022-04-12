@@ -48,16 +48,20 @@ public class MyLongPulling extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.getMessage().hasText()) {
-            textCommandServiceInterface.getTextMessage(update.getMessage());
-        }
-        else if (update.getMessage().hasPhoto()) {
-            try {
-                photoServiceInterface.savePhoto(update.getMessage());
-            } catch (TelegramApiException e) {
-                logger.error("SavePhoto method error. Cant send message for client. "+e.getMessage());
-            }
+        if (update.hasMessage()) {
+            if (update.getMessage().hasPhoto()) {
+                try {
+                    photoServiceInterface.savePhoto(update.getMessage());
+                } catch (TelegramApiException e) {
+                    logger.error("SavePhoto method error. Cant send message for client. " + e.getMessage());
+                }
+            }else
+                textCommandServiceInterface.getTextMessage(update.getMessage());
+
+        }else if (update.hasCallbackQuery()) {
+            System.out.println(update.getCallbackQuery().getMessage());
         }
     }
-
 }
+
+
