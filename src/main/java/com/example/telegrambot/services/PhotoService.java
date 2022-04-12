@@ -40,10 +40,6 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
     public PhotoService(UsersCatImageRepos usersCatImageRepos, BotUsersRepos botUsersRepos) {
         super(new DefaultBotOptions());
         this.usersCatImageRepos = usersCatImageRepos;
-        File file = new File("/img");
-        if(!file.mkdir()){
-            logger.error("Cant create /img directory");
-        }
         this.botUsersRepos = botUsersRepos;
     }
 
@@ -54,21 +50,27 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
 
     @Override
     public void savePhoto(Message message) throws TelegramApiException {
-        try {
-            File file=new File("img/"+message.getPhoto().get(2).getFileId()+".jpg");
-            if(file.createNewFile()) {
-                downloadFile(Objects.requireNonNull(getFilePath(message.getPhoto().get(2))), file);
-                message.setText(saveImage(message,file));
-                file.deleteOnExit();
+        File fileDir = new File("/img");
+        if(!fileDir.mkdir()){
+            logger.error("Cant create /img directory");
+            message.setText("Загрузка фото временно не работает");
+        }
+        else {
+            try {
+                File file = new File("img/" + message.getPhoto().get(2).getFileId() + ".jpg");
+                if (file.createNewFile()) {
+                    downloadFile(Objects.requireNonNull(getFilePath(message.getPhoto().get(2))), file);
+                    message.setText(saveImage(message, file));
+                    file.deleteOnExit();
+                } else {
+                    message.setText("Не судьба");
+                }
+            } catch (NoSuchElementException e) {
+                message.setText("Наберите /start для начала");
+            } catch (IOException e) {
+                logger.error("Cant create new file." + e.getMessage());
+                e.printStackTrace();
             }
-            else {
-                message.setText("Не судьба");
-            }
-        } catch (NoSuchElementException e) {
-            message.setText("Наберите /start для начала");
-        } catch (IOException e) {
-            logger.error("Cant create new file."+e.getMessage());
-            e.printStackTrace();
         }
         execute(new SendMessage(message.getChatId().toString(),message.getText()));
     }
