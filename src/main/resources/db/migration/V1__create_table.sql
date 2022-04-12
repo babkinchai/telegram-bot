@@ -1,2 +1,2 @@
 create table if not exists usr (id int8 not null, username varchar(255), primary key (id));
-create table if not exists usr_cat_name (id int8 not null, image_name varchar(255), bot_users_id int8, primary key (id)) ;
+create table if not exists usr_cat_name (id serial not null, image_name varchar(255), bot_users_id int8, primary key (id)) ;
