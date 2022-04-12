@@ -16,10 +16,10 @@ import java.util.NoSuchElementException;
 public class MyLongPulling extends TelegramLongPollingBot {
 
 
-    @Value("${bot.name}")
+    @Value("${name}")
     private String botName;
 
-    @Value("${bot.token}")
+    @Value("${token}")
     private String token;
 
     private final BotCommandsServiceInterface botCommandsServiceInterface;
