@@ -1,11 +1,8 @@
-bot:
-  name: MyMortyCat_bot
-  token: 5214743430:AAH_jBaZtysWLE7wA4sYj98_TbPykr-7XSE
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/telegram_bot_db
-    username: postgres
-    password: postgres
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/telegram_bot_db}
+    username: ${JDBC_DATABASE_USERNAME postgres}
+    password: ${JDBC_DATABASE_PASSWORD postgres}
   jpa:
     hibernate:
      ddl-auto: validate
