@@ -33,6 +33,8 @@ public class BotCommandsService implements BotCommandsServiceInterface {
     }
 
     public String startBotMessage(Update update) {
+        File file=new File("img/");
+        file.mkdir();
         BotUsers botUsers=new BotUsers();
         botUsers.setUsername(update.getMessage().getFrom().getUserName());
         botUsers.setId(update.getMessage().getFrom().getId());
