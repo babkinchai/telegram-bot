@@ -50,7 +50,7 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
 
     @Override
     public void savePhoto(Message message) throws TelegramApiException {
-        File fileDir = new File("/img");
+        File fileDir = new File("img");
         boolean mkdir = fileDir.mkdir();
         if(!mkdir){
             logger.error("Cant create /img directory");
