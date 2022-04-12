@@ -19,4 +19,6 @@ public class UsersCatImage {
     @Column(name = "image_name")
     private String imageName;
 
+    @Column(name = "file_id")
+    private String fileId;
 }

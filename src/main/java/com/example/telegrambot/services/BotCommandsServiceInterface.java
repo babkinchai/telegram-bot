@@ -1,3 +1,4 @@
+/*
 package com.example.telegrambot.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,3 +17,4 @@ public interface BotCommandsServiceInterface {
 
     String getImagePath(String url) throws JsonProcessingException;
 }
+*/

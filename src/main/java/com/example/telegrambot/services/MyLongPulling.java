@@ -3,29 +3,28 @@ package com.example.telegrambot.services;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.NoSuchElementException;
 
 @Component
 public class MyLongPulling extends TelegramLongPollingBot {
 
-
-    @Value("${name}")
+    @Value("${bot.name}")
     private String botName;
 
-    @Value("${token}")
+    @Value("${bot.token}")
     private String token;
 
-    private final BotCommandsServiceInterface botCommandsServiceInterface;
+    private final TextCommandServiceInterface textCommandServiceInterface;
 
-    public MyLongPulling(BotCommandsService botCommandsServiceInterface) {
-        this.botCommandsServiceInterface = botCommandsServiceInterface;
+
+    private final PhotoServiceInterface photoServiceInterface;
+
+    public MyLongPulling(TextCommandService textCommandServiceInterface,
+                         PhotoService photoServiceInterface
+    ) {
+        this.textCommandServiceInterface = textCommandServiceInterface;
+        this.photoServiceInterface = photoServiceInterface;
     }
 
     @Override
@@ -40,9 +39,24 @@ public class MyLongPulling extends TelegramLongPollingBot {
 
     @Override
     public void onRegister() {
+        System.out.println("hello");
     }
 
     @Override
+    public void onUpdateReceived(Update update) {
+        if (update.getMessage().hasText()) {
+            textCommandServiceInterface.getTextMessage(update.getMessage());
+        }
+        else if (update.getMessage().hasPhoto()) {
+            try {
+                photoServiceInterface.savePhoto(update.getMessage());
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+/*    @Override
     public void onUpdateReceived(Update update) {
         SendMessage message = new SendMessage();
         message.setChatId(update.getMessage().getChatId().toString());
@@ -62,26 +76,12 @@ public class MyLongPulling extends TelegramLongPollingBot {
             }
         }
         if(update.getMessage().hasPhoto()){
-            try {
-                File file=new File("img/"+update.getMessage().getPhoto().get(2).getFileId()+".jpg");
-                if(file.createNewFile()) {
-                    String url=getBaseUrl()+"getFile?file_id="+update.getMessage().getPhoto().get(2).getFileId();
-                    downloadFile(botCommandsServiceInterface.getImagePath(url), file);
-                    message.setText(botCommandsServiceInterface.saveImage(update,file));
-                }
-                else {
-                    message.setText("Не судьба");
-                }
-            } catch (NoSuchElementException e) {
-                message.setText("Наберите /start для начала");
-            } catch (TelegramApiException | IOException e) {
-                e.printStackTrace();
-            }
+
         }
         try {
             execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }

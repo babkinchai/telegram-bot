@@ -1,3 +1,4 @@
+/*
 package com.example.telegrambot.services;
 
 import com.example.telegrambot.domain.FilePathDomain;
@@ -88,3 +89,4 @@ public class BotCommandsService implements BotCommandsServiceInterface {
         return photoSizeObject.getResult().getFile_path();
     }
 }
+*/
