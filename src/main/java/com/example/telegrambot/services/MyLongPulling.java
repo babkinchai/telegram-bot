@@ -1,5 +1,7 @@
 package com.example.telegrambot.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -8,6 +10,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 public class MyLongPulling extends TelegramLongPollingBot {
+
+    public static Logger logger= LoggerFactory.getLogger(MyLongPulling.class);
 
     @Value("${bot.name}")
     private String botName;
@@ -51,37 +55,9 @@ public class MyLongPulling extends TelegramLongPollingBot {
             try {
                 photoServiceInterface.savePhoto(update.getMessage());
             } catch (TelegramApiException e) {
-                e.printStackTrace();
+                logger.error("SavePhoto method error. Cant send message for client. "+e.getMessage());
             }
         }
     }
 
-/*    @Override
-    public void onUpdateReceived(Update update) {
-        SendMessage message = new SendMessage();
-        message.setChatId(update.getMessage().getChatId().toString());
-        if(update.getMessage().hasText()){
-            if ("/start".equals(update.getMessage().getText())) {
-                message.setText(botCommandsServiceInterface.startBotMessage(update));
-            } else {
-                SendPhoto sendPhoto = new SendPhoto();
-                sendPhoto.setPhoto(botCommandsServiceInterface.getPhoto());
-                sendPhoto.setChatId(update.getMessage().getChatId().toString());
-                try {
-                    execute(sendPhoto);
-                    message.setText("Кот");
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        if(update.getMessage().hasPhoto()){
-
-        }
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }*/
 }

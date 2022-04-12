@@ -2,6 +2,8 @@ package com.example.telegrambot.services;
 
 import com.example.telegrambot.entity.BotUsers;
 import com.example.telegrambot.repository.BotUsersRepos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
@@ -18,6 +20,8 @@ import java.util.List;
 
 @Component
 public class TextCommandService extends DefaultAbsSender implements TextCommandServiceInterface{
+
+    public static Logger logger= LoggerFactory.getLogger(TextCommandService.class);
 
     @Value("${bot.token}")
     String token;
@@ -50,7 +54,7 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
                 try {
                     execute(new SendMessage(message.getChatId().toString(),"Осуждаю"));
                 } catch (TelegramApiException e) {
-                    e.printStackTrace();
+                    logger.error("getTextMessage switch default error. Cant send message for client. "+e.getMessage());
                 }
 
         }
@@ -83,7 +87,7 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.error("sendCustomKeyboard method error. Cant send message for client. "+e.getMessage());
         }
     }
 
@@ -99,7 +103,7 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
             }
         }
         catch (TelegramApiException e) {
-            e.printStackTrace();
+            logger.error("sendCatsPhoto switch default error. Cant send message for client. "+e.getMessage());
         }
     }
 

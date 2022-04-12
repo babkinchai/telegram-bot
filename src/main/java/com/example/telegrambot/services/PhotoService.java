@@ -4,6 +4,8 @@ import com.example.telegrambot.entity.BotUsers;
 import com.example.telegrambot.entity.UsersCatImage;
 import com.example.telegrambot.repository.BotUsersRepos;
 import com.example.telegrambot.repository.UsersCatImageRepos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
@@ -27,6 +29,8 @@ import java.util.Optional;
 @Service
 public class PhotoService extends DefaultAbsSender implements PhotoServiceInterface {
 
+    public static Logger logger= LoggerFactory.getLogger(PhotoService.class);
+
     @Value("${bot.token}")
     private String token;
 
@@ -37,7 +41,9 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
         super(new DefaultBotOptions());
         this.usersCatImageRepos = usersCatImageRepos;
         File file = new File("/img");
-        file.mkdir();
+        if(!file.mkdir()){
+            logger.error("Cant create /img directory");
+        }
         this.botUsersRepos = botUsersRepos;
     }
 
@@ -61,6 +67,7 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
         } catch (NoSuchElementException e) {
             message.setText("Наберите /start для начала");
         } catch (IOException e) {
+            logger.error("Cant create new file."+e.getMessage());
             e.printStackTrace();
         }
         execute(new SendMessage(message.getChatId().toString(),message.getText()));
@@ -78,7 +85,7 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
                 org.telegram.telegrambots.meta.api.objects.File file = execute(getFileMethod);
                 return file.getFilePath();
             } catch (TelegramApiException e) {
-                e.printStackTrace();
+                logger.error("getFilePath method error. Cant send message for client. "+e.getMessage());
             }
         }
 
