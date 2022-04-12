@@ -52,27 +52,19 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
     public void savePhoto(Message message) throws TelegramApiException {
         File fileDir = new File("img");
         boolean mkdir = fileDir.mkdir();
-        if(!mkdir){
-            logger.error("Cant create /img directory");
-            message.setText("Загрузка фото временно не работает");
-        }
-        else {
             try {
                 File file = new File("img/" + message.getPhoto().get(2).getFileId() + ".jpg");
-                if (file.createNewFile()) {
+                file.createNewFile();
                     downloadFile(Objects.requireNonNull(getFilePath(message.getPhoto().get(2))), file);
                     message.setText(saveImage(message, file));
                     file.deleteOnExit();
-                } else {
-                    message.setText("Не судьба");
-                }
             } catch (NoSuchElementException e) {
                 message.setText("Наберите /start для начала");
             } catch (IOException e) {
                 logger.error("Cant create new file." + e.getMessage());
                 e.printStackTrace();
             }
-        }
+
         execute(new SendMessage(message.getChatId().toString(),message.getText()));
     }
 
