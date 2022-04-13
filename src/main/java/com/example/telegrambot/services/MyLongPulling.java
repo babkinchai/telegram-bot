@@ -62,7 +62,11 @@ public class MyLongPulling extends TelegramLongPollingBot {
                 textCommandServiceInterface.getTextMessage(update.getMessage());
 
         }else if (update.hasCallbackQuery()) {
-            callbackServiceInterface.getCallback(update.getCallbackQuery());
+            try {
+                callbackServiceInterface.getCallback(update.getCallbackQuery());
+            } catch (TelegramApiException e) {
+                logger.error("getCallBack method error. Cant send message for client. " + e.getMessage());
+            }
         }
     }
 }

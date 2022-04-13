@@ -6,6 +6,7 @@ import com.example.telegrambot.repository.BotUsersRepos;
 import com.example.telegrambot.repository.UsersCatImageRepos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
@@ -16,16 +17,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -39,11 +36,13 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
 
     private final UsersCatImageRepos usersCatImageRepos;
     private final BotUsersRepos botUsersRepos;
+    private final InlineKeyboardServiceInterface inlineKeyboardServiceInterface;
 
-    public PhotoService(UsersCatImageRepos usersCatImageRepos, BotUsersRepos botUsersRepos) {
+    public PhotoService(UsersCatImageRepos usersCatImageRepos, BotUsersRepos botUsersRepos, InlineKeyboardService inlineKeyboardServiceInterface) {
         super(new DefaultBotOptions());
         this.usersCatImageRepos = usersCatImageRepos;
         this.botUsersRepos = botUsersRepos;
+        this.inlineKeyboardServiceInterface = inlineKeyboardServiceInterface;
     }
 
     public SendPhoto getPhoto(Message message) throws IndexOutOfBoundsException{
@@ -58,10 +57,10 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
             if(botUsersRepos.findById(fromId).isPresent()) {
                 BotUsers checkUser = usersCatImage.getBotUsers().getSubUser().stream().filter(botUsers -> botUsers.getId().equals(fromId)).findFirst().orElse(null);
                 if (checkUser!=null){
-                    sendPhoto.setReplyMarkup(sendUnSubInlineKeyboard(usersCatImage.getBotUsers().getUsername()));
+                    sendPhoto.setReplyMarkup(inlineKeyboardServiceInterface.sendUnsubInlineKeyboard(usersCatImage.getBotUsers()));
                 }
                 else {
-                    sendPhoto.setReplyMarkup(sendSubInlineKeyboard(usersCatImage.getBotUsers().getUsername()));
+                    sendPhoto.setReplyMarkup(inlineKeyboardServiceInterface.sendSubInlineKeyboard(usersCatImage.getBotUsers()));
                 }
             }
         }
@@ -134,30 +133,6 @@ public class PhotoService extends DefaultAbsSender implements PhotoServiceInterf
             });
             return "Изображение сохранено";
         }
-    }
-
-    public InlineKeyboardMarkup sendSubInlineKeyboard(String username) {
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        List<InlineKeyboardButton> buttons = new ArrayList<InlineKeyboardButton>();
-        InlineKeyboardButton sub= new InlineKeyboardButton("Подписаться на публикации " + username);
-        sub.setCallbackData("/sub/"+username);
-        buttons.add(sub);
-        keyboard.add(buttons);
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-        return inlineKeyboardMarkup;
-    }
-
-    public InlineKeyboardMarkup sendUnSubInlineKeyboard(String username) {
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        List<InlineKeyboardButton> buttons = new ArrayList<InlineKeyboardButton>();
-        InlineKeyboardButton sub= new InlineKeyboardButton("Отписаться от публикаций " + username);
-        sub.setCallbackData("/unsub/"+username);
-        buttons.add(sub);
-        keyboard.add(buttons);
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-        return inlineKeyboardMarkup;
     }
 
     @Override
