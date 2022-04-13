@@ -5,7 +5,7 @@ spring:
     password: ${JDBC_DATABASE_PASSWORD postgres}
   jpa:
     hibernate:
-     ddl-auto: validate
+     ddl-auto: update
 logging:
   level:
     root: error
