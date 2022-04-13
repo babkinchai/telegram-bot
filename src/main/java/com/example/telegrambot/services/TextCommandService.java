@@ -48,7 +48,7 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
                 sendCustomKeyboard(message.getChatId().toString());
                 break;
             }
-            case ("Что нибудь идеальное"):
+            case ("Что-нибудь идеальное"):
             {
                 photoService.sendCatsPhoto(message);
                 break;
