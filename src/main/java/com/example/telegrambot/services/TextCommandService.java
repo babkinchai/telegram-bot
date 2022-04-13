@@ -83,7 +83,7 @@ public class TextCommandService extends DefaultAbsSender implements TextCommandS
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
-        row.add("Что нибудь идеальное");
+        row.add("Что-нибудь идеальное");
         keyboard.add(row);
         keyboardMarkup.setKeyboard(keyboard);
         message.setReplyMarkup(keyboardMarkup);
