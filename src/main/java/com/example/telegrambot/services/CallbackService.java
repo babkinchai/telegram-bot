@@ -31,7 +31,7 @@ public class CallbackService extends DefaultAbsSender implements CallbackService
         if(callbackQuery.getData().matches("/sub/(.*)"))
         {
             String userId = callbackQuery.getData().substring(5);
-            if(botUsersRepos.findById(Long.valueOf(userId)).isPresent()) {
+           if(botUsersRepos.findById(Long.valueOf(userId)).isPresent()) {
                 BotUsers botUsersToAddSub = botUsersRepos.findById(Long.valueOf(userId)).get();
                 if(botUsersRepos.findById(callbackQuery.getFrom().getId()).isPresent()){
                     BotUsers checkUser=botUsersToAddSub.getSubUser().stream()
